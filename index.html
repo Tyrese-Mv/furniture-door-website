@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ANASA — Luxury Interior Doors</title>
+<meta name="description" content="ANASA crafts luxury interior doors from multi-layer solid wood around a dense graphite core. Soundproof, warp-resistant, and built to last." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<!-- ext-resource-dependency: three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="site-header" data-screen-label="Header">
+  <a class="brand-lockup" href="#top" aria-label="ANASA Luxury Doors">
+    <img src="assets/logo-mark.png" alt="ANASA" />
+    <span class="wordmark"><b>ANASA</b><span>Luxury Doors</span></span>
+  </a>
+  <nav class="main-nav">
+    <a class="nav-link" href="#anatomy">The Anatomy</a>
+    <a class="nav-link" href="#why">Why ANASA</a>
+    <a class="nav-link" href="#finishes">Finishes</a>
+    <a class="nav-link" href="#process">Process</a>
+    <a class="btn ghost" href="#contact">Enquire</a>
+  </nav>
+  <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- mobile overlay nav -->
+<div class="mobile-nav" id="mobileNav" aria-hidden="true">
+  <button class="mnav-close" id="navClose" aria-label="Close menu">
+    <span></span><span></span>
+  </button>
+  <nav>
+    <a href="#anatomy">The Anatomy</a>
+    <a href="#why">Why ANASA</a>
+    <a href="#finishes">Finishes</a>
+    <a href="#process">Process</a>
+    <a href="#contact" class="mnav-cta btn">Request a Quote</a>
+  </nav>
+  <div class="mnav-foot">
+    <span>enquiries@anasadoors.com</span>
+    <span>+1 (212) 555 0147</span>
+  </div>
+</div>
+
+<span id="top"></span>
+
+<!-- ============ HERO ============ -->
+<section class="hero" data-screen-label="Hero">
+  <div class="hero-glow"></div>
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-fallback" style="background-image:url('assets/door-oxblood.jpeg')"></div>
+  <div class="hero-content">
+    <div class="inner">
+      <div class="hero-eyebrow hero-anim eyebrow">Luxury Interior Doors</div>
+      <h1 class="hero-anim a2">ANASA</h1>
+      <p class="tagline hero-anim a3">Multi-layer solid wood, built around a dense graphite core. A door made to be felt, and made to stay quiet.</p>
+      <div class="hero-cta hero-anim a4" style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
+        <a class="btn" href="#finishes">Explore the Collection <span class="arrow">&#8594;</span></a>
+        <a class="btn ghost" href="#contact">Request a Quote</a>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-cue"><span>Scroll</span><span class="line"></span></div>
+</section>
+
+<!-- ============ BRAND INTRO ============ -->
+<section class="intro-section section-pad" data-screen-label="Brand intro">
+  <div class="wrap intro">
+    <div class="intro-copy reveal">
+      <div class="eyebrow" style="margin-bottom:1.6rem;">The House of ANASA</div>
+      <p class="statement serif">A door is the first thing a room says. We make it say <em>everything</em>.</p>
+      <p class="lede">ANASA builds interior doors from multi-layer solid wood around a dense graphite core. The result has real presence: quiet between rooms, substantial in the hand, and dimensionally stable for a lifetime. Luxury, for us, is not decoration. It is the way a door feels when it closes.</p>
+      <a class="btn ghost" href="#anatomy">See how it is built <span class="arrow">&#8594;</span></a>
+    </div>
+    <figure class="intro-figure reveal d2">
+      <span class="frame"></span>
+      <img src="assets/door-oxblood.jpeg" alt="An ANASA mahogany door in a showroom corridor" />
+    </figure>
+  </div>
+</section>
+
+<!-- ============ ANATOMY (interactive 3D) ============ -->
+<section class="anatomy" id="anatomy" data-screen-label="Anatomy">
+  <div class="anatomy-track" style="height:340vh;">
+    <div class="anatomy-sticky">
+      <canvas id="anatomy-canvas"></canvas>
+
+      <div class="anatomy-overlay">
+        <div class="anno" data-layer="0">
+          <span class="dot"></span>
+          <div class="anno-card">
+            <div class="n">01</div>
+            <div class="t">Natural Veneer</div>
+            <div class="d">Light oak, walnut, mahogany or graphite. Finished by hand to a flawless surface.</div>
+          </div>
+        </div>
+        <div class="anno" data-layer="1">
+          <span class="dot"></span>
+          <div class="anno-card">
+            <div class="n">02</div>
+            <div class="t">Solid Wood Board</div>
+            <div class="d">Multi-layer construction stays flat and true. It will not bow, twist or warp.</div>
+          </div>
+        </div>
+        <div class="anno" data-layer="2">
+          <span class="dot"></span>
+          <div class="anno-card">
+            <div class="n">03</div>
+            <div class="t">Graphite Core</div>
+            <div class="d">Dense mineral graphite plaster. It absorbs sound and adds fire and heat resistance.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="anatomy-intro">
+        <div class="eyebrow" style="margin-bottom:1.3rem;">The Anatomy</div>
+        <h2 class="section-title" style="font-size:clamp(2rem,3.6vw,3.2rem);">Engineered<br />in layers.</h2>
+        <p class="lede" style="margin-top:1.3rem; font-size:1rem;">Every ANASA door is built from the inside out. Scroll to separate the leaf and read what gives it weight, silence and stability. Drag to turn it.</p>
+      </div>
+
+      <div class="anatomy-progress"><span>Cross-section</span><span class="bar"><i></i></span></div>
+
+      <!-- static fallback when WebGL is unavailable -->
+      <div class="anatomy-fallback wrap" style="grid-template-columns:1fr 1fr; gap:60px; align-items:center; padding-block:120px;">
+        <div>
+          <div class="eyebrow" style="margin-bottom:1.3rem;">The Anatomy</div>
+          <h2 class="section-title">Engineered in layers.</h2>
+          <p class="lede" style="margin-top:1.4rem;">A natural wood veneer over a multi-layer solid wood board, wrapped around a dense graphite plaster core. Quiet, stable, and built to last.</p>
+        </div>
+        <img src="assets/door-pair.jpeg" alt="ANASA doors in oak and walnut" style="aspect-ratio:4/3; object-fit:cover;" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY ANASA ============ -->
+<section class="why section-pad" id="why" data-screen-label="Why ANASA">
+  <div class="wrap">
+    <div class="section-head reveal" style="margin-bottom:clamp(48px,6vw,80px);">
+      <div class="eyebrow">Why ANASA</div>
+      <h2 class="section-title">Four principles, in every leaf.</h2>
+    </div>
+
+    <div class="pillars reveal d1">
+      <div class="pillar">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M12 2.5 4 5.5v6c0 5 3.4 8.2 8 10 4.6-1.8 8-5 8-10v-6L12 2.5Z"/><path d="m8.6 11.8 2.4 2.4 4.4-4.6"/></svg>
+        <h3>Premium Quality</h3>
+        <p>Solid wood construction, pressed and finished by hand to a flawless surface.</p>
+      </div>
+      <div class="pillar">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M3 21l3.8-1 11-11-2.8-2.8-11 11L3 21Z"/><path d="m14.8 5.4 2.8 2.8 2.1-2.1a1.4 1.4 0 0 0 0-2L18 1.5a1.4 1.4 0 0 0-2 0l-2.1 2.1"/></svg>
+        <h3>Elegant Design</h3>
+        <p>Minimalist concealed frames, flush installation, and slim black hardware.</p>
+      </div>
+      <div class="pillar">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M9.5 14.5 14.5 9.5"/><path d="M7.6 11.7 5.8 13.5a3.4 3.4 0 0 0 4.8 4.8l1.8-1.8"/><path d="M16.4 12.3l1.8-1.8a3.4 3.4 0 0 0-4.8-4.8l-1.8 1.8"/></svg>
+        <h3>Durable</h3>
+        <p>A multi-layer core that holds its shape and its finish for decades.</p>
+      </div>
+      <div class="pillar">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><path d="m3 11 3-3 5 4 2-1 5 4 3-3"/><path d="m11 12 2.5 2.5a1.6 1.6 0 0 0 2.3-2.3"/><path d="M3 11v5l5 4 4-2"/><path d="M21 9v5l-4 3"/></svg>
+        <h3>Reliable</h3>
+        <p>Consistent fit, consistent feel, and a soft, solid close. Door after door.</p>
+      </div>
+    </div>
+
+    <div class="benefits">
+      <div class="benefit reveal d1"><div class="num">01</div><h4>Soundproof</h4><p>The graphite core absorbs sound, giving real acoustic privacy from one room to the next.</p></div>
+      <div class="benefit reveal d2"><div class="num">02</div><h4>Warp-resistant</h4><p>Multi-layer solid wood stays flat and true. No bowing, no twisting, no warping over time.</p></div>
+      <div class="benefit reveal d3"><div class="num">03</div><h4>Fire &amp; heat resistant</h4><p>The mineral graphite filling adds fire resistance and a quiet layer of thermal insulation.</p></div>
+      <div class="benefit reveal d4"><div class="num">04</div><h4>Substantial feel</h4><p>Real weight and a soft, solid close. The kind of quality you hear the moment it shuts.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINISHES ============ -->
+<section class="finishes section-pad" id="finishes" data-screen-label="Finishes">
+  <div class="wrap">
+    <div class="finishes-head reveal">
+      <div class="section-head" style="margin-bottom:0;">
+        <div class="eyebrow">The Collection</div>
+        <h2 class="section-title">A finish for every room.</h2>
+      </div>
+      <p class="lede" style="font-size:1rem; max-width:38ch;">Natural wood veneers, each with concealed frames and slim black hardware. Optional engraved geometric detailing. Tap a finish to add it to your enquiry.</p>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="finish-rail reveal d1">
+      <article class="finish" data-name="Light Oak">
+        <div class="ph"><img src="assets/finish-oak.jpeg" alt="Light Oak finish" /></div>
+        <span class="swatch" style="background:#C8A578"></span>
+        <span class="plus" aria-hidden="true">+</span>
+        <div class="meta"><span class="name serif">Light Oak</span><span class="tag">Warm / Bright</span></div>
+      </article>
+      <article class="finish" data-name="Walnut">
+        <div class="ph"><img src="assets/finish-walnut.jpeg" alt="Walnut finish" /></div>
+        <span class="swatch" style="background:#9A795B"></span>
+        <span class="plus" aria-hidden="true">+</span>
+        <div class="meta"><span class="name serif">Walnut</span><span class="tag">Soft / Neutral</span></div>
+      </article>
+      <article class="finish" data-name="Mahogany">
+        <div class="ph"><img src="assets/finish-mahogany.jpeg" alt="Mahogany finish" /></div>
+        <span class="swatch" style="background:#7E463C"></span>
+        <span class="plus" aria-hidden="true">+</span>
+        <div class="meta"><span class="name serif">Mahogany</span><span class="tag">Deep / Oxblood</span></div>
+      </article>
+      <article class="finish" data-name="Graphite">
+        <div class="ph"><img src="assets/finish-graphite.jpeg" alt="Graphite finish" /></div>
+        <span class="swatch" style="background:#3A3A3D"></span>
+        <span class="plus" aria-hidden="true">+</span>
+        <div class="meta"><span class="name serif">Graphite</span><span class="tag">Matte / Modern</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section class="process section-pad" id="process" data-screen-label="Process">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">From Selection to Installation</div>
+      <h2 class="section-title">Four steps to your door.</h2>
+    </div>
+    <div class="process-grid">
+      <div class="step reveal d1"><span class="num">1</span><h4>Consultation</h4><p>We begin with your space, your light, and the finish that belongs in it.</p></div>
+      <div class="step reveal d2"><span class="num">2</span><h4>Custom Sizing</h4><p>Every leaf and frame is measured and made to your exact opening.</p></div>
+      <div class="step reveal d3"><span class="num">3</span><h4>Crafting</h4><p>Layered, pressed, veneered and hand-finished in our workshop.</p></div>
+      <div class="step reveal d4"><span class="num">4</span><h4>Installation</h4><p>Flush, concealed and precisely aligned by our own fitters.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTACT ============ -->
+<section class="contact section-pad" id="contact" data-screen-label="Contact">
+  <div class="wrap contact-grid">
+    <div class="contact-info reveal">
+      <div class="eyebrow">Enquire</div>
+      <h2 class="section-title" style="margin:1.4rem 0 1.6rem;">Begin a project.</h2>
+      <p class="lede">Tell us about your space. We work with architects, interior designers, developers and homeowners on projects of every scale.</p>
+      <div class="detail-row">
+        <div class="detail">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3.5 6.5 8.5 6 8.5-6"/></svg>
+          <div><div class="k">Email</div><div class="v">enquiries@anasadoors.com</div></div>
+        </div>
+        <div class="detail">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M5 4h3l2 5-2.5 1.5a11 11 0 0 0 5 5L19 18l2 3v0a2 2 0 0 1-2 2 17 17 0 0 1-15-15 2 2 0 0 1 1-2Z"/></svg>
+          <div><div class="k">Telephone</div><div class="v">+1 (212) 555 0147</div></div>
+        </div>
+        <div class="detail">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          <div><div class="k">Showroom</div><div class="v">ANASA Atelier, 18 Marble Arch, Design District</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal d2">
+      <form class="enquiry" novalidate>
+        <div class="field">
+          <input type="text" id="enq-name" placeholder=" " data-required />
+          <label for="enq-name">Full name</label>
+          <span class="underline"></span>
+          <div class="err">Please enter your name.</div>
+        </div>
+        <div class="field">
+          <input type="email" id="enq-email" placeholder=" " data-required />
+          <label for="enq-email">Email address</label>
+          <span class="underline"></span>
+          <div class="err">Please enter a valid email.</div>
+        </div>
+        <div class="field">
+          <input type="tel" id="enq-phone" placeholder=" " />
+          <label for="enq-phone">Phone (optional)</label>
+          <span class="underline"></span>
+        </div>
+        <div class="field">
+          <textarea id="enq-project" placeholder=" " data-required></textarea>
+          <label for="enq-project">Project details</label>
+          <span class="underline"></span>
+          <div class="err">Tell us a little about your project.</div>
+        </div>
+        <div class="form-foot">
+          <p class="form-note">We reply to every enquiry within two working days.</p>
+          <button class="btn" type="submit">Send Enquiry <span class="arrow">&#8594;</span></button>
+        </div>
+      </form>
+      <div class="form-success">
+        <div class="serif gold-text">Thank you.</div>
+        <p>Your enquiry has reached our atelier. We will be in touch within two working days.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer" data-screen-label="Footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="assets/logo-lockup.png" alt="ANASA Luxury Doors" />
+        <p>Luxury interior doors in multi-layer solid wood with a dense graphite core. Quiet, substantial, and built to last.</p>
+        <div class="footer-pillars">
+          <span>Premium Quality</span><span>Elegant Design</span><span>Durable</span><span>Reliable</span>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h5>Explore</h5>
+        <a href="#anatomy">The Anatomy</a>
+        <a href="#why">Why ANASA</a>
+        <a href="#finishes">Finishes</a>
+        <a href="#process">Process</a>
+        <a href="#contact">Enquire</a>
+      </div>
+      <div class="footer-col">
+        <h5>Atelier</h5>
+        <p>18 Marble Arch<br />Design District</p>
+        <p>enquiries@anasadoors.com</p>
+        <p>+1 (212) 555 0147</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="year">2026</span> ANASA Luxury Doors. All rights reserved.</p>
+      <div class="footer-social">
+        <a href="#">Instagram</a><a href="#">Pinterest</a><a href="#">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+    <rect width="400" height="400" fill="#0E0E0E"/>
+    <g stroke="#C9A24B" stroke-width="6" fill="none">
+      <rect x="150" y="96" width="100" height="180"/>
+    </g>
+    <rect x="166" y="112" width="68" height="164" fill="#7E463C"/>
+    <rect x="214" y="112" width="7" height="164" fill="#1c1c1e"/>
+    <text x="200" y="330" fill="#E8C874" font-family="Georgia, serif" font-size="46" letter-spacing="8" text-anchor="middle">ANASA</text>
+  </svg>
+</template>
+
+<script src="three-shared.js"></script>
+<script src="three-hero.js"></script>
+<script src="three-anatomy.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
