@@ -19,11 +19,13 @@
     onScrollHeader(); window.addEventListener('scroll', onScrollHeader, {passive:true});
 
     /* settle(): guarantees the visible end-state even where the document
-       timeline is frozen (transitions can't advance). Fires after the CSS
-       fade would already be complete in a normal browser, so it is a no-op
-       there but a safety net elsewhere. */
+       timeline is frozen (transitions can't advance). Ends on the real
+       transitionend; the timer covers the longest duration+delay in use
+       (1.1s + .52s stagger) as the safety net. */
     function settle(el){
-      setTimeout(()=>{ el.style.transition='none'; el.style.opacity='1'; el.style.transform='none'; }, 1000);
+      const done = ()=>{ el.style.transition='none'; el.style.opacity='1'; el.style.transform='none'; };
+      el.addEventListener('transitionend', done, {once:true});
+      setTimeout(done, 1800);
     }
 
     /* ---------- mobile nav ---------- */
@@ -31,12 +33,34 @@
     const navClose  = document.getElementById('navClose');
     const mobileNav = document.getElementById('mobileNav');
     if(navToggle && mobileNav){
-      const openNav = ()=>{ mobileNav.classList.add('open'); mobileNav.setAttribute('aria-hidden','false'); navToggle.setAttribute('aria-expanded','true'); document.body.style.overflow='hidden'; };
-      const closeNav = ()=>{ mobileNav.classList.remove('open'); mobileNav.setAttribute('aria-hidden','true'); navToggle.setAttribute('aria-expanded','false'); document.body.style.overflow=''; };
+      let lastFocus = null;
+      const openNav = ()=>{
+        lastFocus = document.activeElement;
+        mobileNav.classList.add('open');
+        mobileNav.setAttribute('aria-hidden','false');
+        navToggle.setAttribute('aria-expanded','true');
+        document.body.style.overflow='hidden';
+        (navClose || mobileNav.querySelector('a')).focus();
+      };
+      const closeNav = ()=>{
+        mobileNav.classList.remove('open');
+        mobileNav.setAttribute('aria-hidden','true');
+        navToggle.setAttribute('aria-expanded','false');
+        document.body.style.overflow='';
+        (lastFocus && document.contains(lastFocus) ? lastFocus : navToggle).focus();
+      };
       navToggle.addEventListener('click', openNav);
       navClose && navClose.addEventListener('click', closeNav);
       mobileNav.querySelectorAll('a').forEach(a=> a.addEventListener('click', closeNav));
-      document.addEventListener('keydown', e=>{ if(e.key==='Escape' && mobileNav.classList.contains('open')) closeNav(); });
+      document.addEventListener('keydown', e=>{
+        if(!mobileNav.classList.contains('open')) return;
+        if(e.key==='Escape'){ closeNav(); return; }
+        if(e.key!=='Tab') return;
+        const items = mobileNav.querySelectorAll('button, a[href]');
+        const first = items[0], last = items[items.length-1];
+        if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+        else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+      });
     }
 
     /* ---------- hero entrance ---------- */
@@ -57,12 +81,30 @@
 
     /* ---------- 3D scenes ---------- */
     let hero=null, anatomy=null;
+    const anatomySection = document.getElementById('anatomy');
+    const track = document.querySelector('.anatomy-track');
+    /* collapse the tall scroll track whenever the 3D cross-section is replaced
+       by the static fallback, so no dead scroll distance remains */
+    function anatomyFallback(){
+      if(anatomySection) anatomySection.classList.add('no-3d');
+      if(track) track.style.height='auto';
+    }
+    if(!webgl && track) track.style.height='auto';
+
     if(webgl){
       const heroCanvas = document.getElementById('hero-canvas');
       const anaCanvas  = document.getElementById('anatomy-canvas');
       const overlay    = document.querySelector('.anatomy-overlay');
-      try{ hero = window.ANASA_initHero(heroCanvas); }catch(e){ console.warn('hero failed', e); document.documentElement.classList.add('no-webgl'); }
-      try{ anatomy = window.ANASA_initAnatomy(anaCanvas, overlay); }catch(e){ console.warn('anatomy failed', e); }
+      try{ hero = window.ANASA_initHero(heroCanvas); }
+      catch(e){
+        console.warn('hero failed', e);
+        document.documentElement.classList.add('no-webgl');
+        if(track) track.style.height='auto';
+      }
+      if(!document.documentElement.classList.contains('no-webgl')){
+        try{ anatomy = window.ANASA_initAnatomy(anaCanvas, overlay); }
+        catch(e){ console.warn('anatomy failed', e); anatomyFallback(); }
+      }
       window.__hero = hero; window.__anatomy = anatomy;
 
       // play/pause by visibility for performance
@@ -80,66 +122,109 @@
 
     /* ---------- scroll-linked progress ---------- */
     const heroEl = document.querySelector('.hero');
-    const track  = document.querySelector('.anatomy-track');
     const progBar= document.querySelector('.anatomy-progress .bar i');
+    const anatomyIntro = document.querySelector('.anatomy-intro');
+    let heroH = window.innerHeight, trackTop = 0, trackSpan = 0, lastP = -1;
     function onScroll(){
       // hero scroll factor (0 at top -> 1 after one viewport)
-      if(hero){
-        const ht = Math.min(1, Math.max(0, window.scrollY / (heroEl.offsetHeight||window.innerHeight)));
-        hero.setScroll(ht);
-      }
+      if(hero) hero.setScroll(Math.min(1, Math.max(0, window.scrollY / heroH)));
       // anatomy progress across its tall track
       if(track){
-        const r = track.getBoundingClientRect();
-        const vh = window.innerHeight;
-        const span = r.height - vh;
-        let p = span>0 ? (-r.top)/span : 0;
+        let p = trackSpan>0 ? (window.scrollY - trackTop)/trackSpan : 0;
         p = Math.max(0, Math.min(1, p));
-        if(anatomy) anatomy.setProgress(p);
-        if(progBar) progBar.style.width = (p*100).toFixed(1)+'%';
+        if(p !== lastP){
+          lastP = p;
+          if(anatomy) anatomy.setProgress(p);
+          if(progBar) progBar.style.width = (p*100).toFixed(1)+'%';
+          // intro copy yields to the annotations as the leaf separates
+          if(anatomyIntro){
+            anatomyIntro.style.opacity = String(Math.max(0, 1 - p*3));
+            anatomyIntro.style.pointerEvents = p>0.3 ? 'none' : '';
+          }
+        }
       }
     }
-    onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+    /* layout reads cached here; onScroll itself reads only window.scrollY */
+    function measure(){
+      if(heroEl) heroH = heroEl.offsetHeight || window.innerHeight;
+      if(track){
+        const r = track.getBoundingClientRect();
+        trackTop = r.top + window.scrollY;
+        trackSpan = r.height - window.innerHeight;
+      }
+      lastP = -1;
+      onScroll();
+    }
+    measure();
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
 
-    /* ---------- finishes: click swatch -> prefill enquiry ---------- */
+    /* ---------- finishes: add to enquiry ---------- */
     document.querySelectorAll('.finish').forEach(f=>{
-      f.addEventListener('click', ()=>{
+      const btn = f.querySelector('.plus');
+      if(!btn) return;
+      btn.addEventListener('click', ()=>{
         const name = f.dataset.name||'';
         const ta = document.querySelector('#enq-project');
         if(ta){
           const base = 'I am interested in the '+name+' finish';
-          ta.value = ta.value && ta.value.indexOf(base)===-1 ? ta.value+'. '+base : base+'.';
-          ta.dispatchEvent(new Event('input'));
+          if(ta.value.indexOf(base)===-1){
+            const prev = ta.value.trim().replace(/\.$/,'');
+            ta.value = prev ? prev+'. '+base+'.' : base+'.';
+            ta.dispatchEvent(new Event('input'));
+          }
         }
         const c = document.getElementById('contact');
         if(c){
           const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 10, behavior: smooth ? 'smooth' : 'auto' });
+          c.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
         }
       });
     });
 
-    /* ---------- enquiry form ---------- */
+    /* ---------- enquiry form: validate, then hand off to the visitor's
+       email app addressed to the atelier (static hosting, no backend) ---------- */
     const form = document.querySelector('form.enquiry');
     if(form){
       const success = document.querySelector('.form-success');
       const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       form.addEventListener('submit', (e)=>{
         e.preventDefault();
-        let ok=true;
+        let firstBad = null;
         form.querySelectorAll('[data-required]').forEach(inp=>{
           const field = inp.closest('.field');
           let bad = !inp.value.trim();
           if(inp.type==='email' && inp.value.trim() && !emailRe.test(inp.value.trim())) bad=true;
           field.classList.toggle('error', bad);
-          if(bad) ok=false;
+          inp.setAttribute('aria-invalid', bad ? 'true' : 'false');
+          if(bad && !firstBad) firstBad = inp;
         });
-        if(!ok) return;
+        if(firstBad){ firstBad.focus(); return; }
+
+        const val = id => { const el=document.getElementById(id); return el ? el.value.trim() : ''; };
+        const phone = val('enq-phone');
+        const body = 'Name: '+val('enq-name')
+          + '\nEmail: '+val('enq-email')
+          + (phone ? '\nPhone: '+phone : '')
+          + '\n\n'+val('enq-project');
+        window.location.href = 'mailto:enquiries@anasadoors.com'
+          + '?subject=' + encodeURIComponent('Enquiry — ANASA Luxury Doors')
+          + '&body=' + encodeURIComponent(body);
+
         form.style.display='none';
-        success.classList.add('show');
+        if(success){
+          success.classList.add('show');
+          const h = success.querySelector('[tabindex="-1"]');
+          if(h) h.focus();
+        }
       });
       form.querySelectorAll('input,textarea').forEach(inp=>{
-        inp.addEventListener('input', ()=>{ const f=inp.closest('.field'); if(f) f.classList.remove('error'); });
+        inp.addEventListener('input', ()=>{
+          const f=inp.closest('.field'); if(f) f.classList.remove('error');
+          inp.removeAttribute('aria-invalid');
+        });
       });
     }
 

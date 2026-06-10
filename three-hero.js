@@ -67,14 +67,16 @@
     // ---- state ----
     const OPEN_BASE = -0.34;     // resting ajar angle (radians)
     let openTarget = OPEN_BASE;
-    let openCur = -0.02;         // start almost closed for entrance
+    let openCur = reduce ? OPEN_BASE : -0.02;  // start almost closed for entrance
     const pointer = { x:0, y:0, tx:0, ty:0 };
     let scrollT = 0;
-    let raf=null, running=false, start=performance.now();
+    let raf=null, running=false, start=performance.now(), pausedAt=0, last=start;
+    let introDone = reduce;      // entrance plays once, never on re-entry
 
     function resize(){
       const r = canvas.getBoundingClientRect();
       const w = r.width||window.innerWidth, h = r.height||window.innerHeight;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
       renderer.setSize(w, h, false);
       camera.aspect = w/h;
       // pull camera back a touch on portrait so the door fits
@@ -93,26 +95,31 @@
 
     function frameLoop(now){
       const t = (now - start)/1000;
-      // entrance: ease the door from shut to ajar over first ~2.2s
-      const intro = Math.min(1, t/2.2);
+      // frame-rate independent smoothing (matches the old 0.06/0.05 at 60Hz)
+      const dt = Math.min(64, now - last); last = now;
+      const k6 = 1 - Math.pow(0.94, dt/16.67);
+      const k5 = 1 - Math.pow(0.95, dt/16.67);
+      // entrance: ease the door from shut to ajar over first ~2.2s, once
+      const intro = introDone ? 1 : Math.min(1, t/2.2);
+      if(intro >= 1) introDone = true;
       const introEase = 1 - Math.pow(1-intro, 3);
       // scroll opens further + invites camera in slightly
       openTarget = OPEN_BASE - scrollT*0.5;
       const idleBreath = reduce ? 0 : Math.sin(t*0.6)*0.025;
       const goalOpen = (OPEN_BASE*introEase) + (openTarget-OPEN_BASE) + idleBreath;
-      openCur += (goalOpen - openCur)*0.06;
+      openCur += (goalOpen - openCur)*k6;
       hinge.rotation.y = openCur;
 
       // cursor parallax on the whole assembly
-      pointer.x += (pointer.tx - pointer.x)*0.05;
-      pointer.y += (pointer.ty - pointer.y)*0.05;
+      pointer.x += (pointer.tx - pointer.x)*k5;
+      pointer.y += (pointer.ty - pointer.y)*k5;
       const idleSpin = reduce ? 0 : Math.sin(t*0.18)*0.06;
       root.rotation.y = idleSpin + pointer.x*0.26;
       root.rotation.x = -pointer.y*0.10 + 0.02;
 
-      // rim glow pulses subtly + grows as door opens
-      rimMat.opacity = 0.35 + Math.abs(Math.sin(t*0.9))*0.25 + (-openCur)*0.3;
-      backGlow.intensity = 5 + Math.sin(t*1.1)*1.5;
+      // rim glow grows as door opens; pulses unless motion is reduced
+      rimMat.opacity = reduce ? 0.45 : 0.35 + Math.abs(Math.sin(t*0.9))*0.25 + (-openCur)*0.3;
+      backGlow.intensity = reduce ? 5 : 5 + Math.sin(t*1.1)*1.5;
 
       // gentle camera dolly with scroll
       camera.position.y = 0.12 - scrollT*0.25;
@@ -122,14 +129,25 @@
       raf = requestAnimationFrame(frameLoop);
     }
 
-    function play(){ if(running) return; running=true; start=performance.now()-300; raf=requestAnimationFrame(frameLoop); }
-    function stop(){ running=false; if(raf) cancelAnimationFrame(raf); raf=null; }
+    function play(){
+      if(running) return; running=true;
+      const now = performance.now();
+      if(pausedAt) start += now - pausedAt; else start = now - 300;
+      pausedAt = 0; last = now;
+      raf=requestAnimationFrame(frameLoop);
+    }
+    function stop(){ if(!running) return; running=false; pausedAt=performance.now(); if(raf) cancelAnimationFrame(raf); raf=null; }
 
     resize();
     window.addEventListener('resize', resize);
     window.addEventListener('pointermove', onPointer);
     renderer.render(scene, camera);
 
-    return { play, stop, setScroll, resize, dispose(){ stop(); renderer.dispose(); } };
+    return { play, stop, setScroll, resize, dispose(){
+      stop();
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('pointermove', onPointer);
+      renderer.dispose();
+    } };
   };
 })();
