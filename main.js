@@ -209,7 +209,7 @@
           + '\nEmail: '+val('enq-email')
           + (phone ? '\nPhone: '+phone : '')
           + '\n\n'+val('enq-project');
-        window.location.href = 'mailto:enquiries@anasadoors.com'
+        window.location.href = 'mailto:info@anasaluxurydoors.co.za'
           + '?subject=' + encodeURIComponent('Enquiry — ANASA Luxury Doors')
           + '&body=' + encodeURIComponent(body);
 
