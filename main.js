@@ -184,13 +184,18 @@
       });
     });
 
-    /* ---------- enquiry form: validate, then hand off to the visitor's
-       email app addressed to the atelier (static hosting, no backend) ---------- */
+    /* ---------- enquiry form: validate, then POST to Web3Forms so the enquiry
+       is emailed to the atelier automatically (static hosting, no backend).
+       Get a free access key at https://web3forms.com — enter
+       info@anasaluxurydoors.co.za, confirm the email, then paste the key below. ---------- */
+    const WEB3FORMS_ACCESS_KEY = '1c6b332f-0d8d-4bee-99f3-c696e244429f';
     const form = document.querySelector('form.enquiry');
     if(form){
       const success = document.querySelector('.form-success');
+      const errBox = form.querySelector('.form-error');
+      const submitBtn = form.querySelector('button[type="submit"]');
       const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      form.addEventListener('submit', (e)=>{
+      form.addEventListener('submit', async (e)=>{
         e.preventDefault();
         let firstBad = null;
         form.querySelectorAll('[data-required]').forEach(inp=>{
@@ -204,20 +209,43 @@
         if(firstBad){ firstBad.focus(); return; }
 
         const val = id => { const el=document.getElementById(id); return el ? el.value.trim() : ''; };
-        const phone = val('enq-phone');
-        const body = 'Name: '+val('enq-name')
-          + '\nEmail: '+val('enq-email')
-          + (phone ? '\nPhone: '+phone : '')
-          + '\n\n'+val('enq-project');
-        window.location.href = 'mailto:info@anasaluxurydoors.co.za'
-          + '?subject=' + encodeURIComponent('Enquiry — ANASA Luxury Doors')
-          + '&body=' + encodeURIComponent(body);
+        const bot = form.querySelector('[name="botcheck"]');
+        const payload = {
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: 'Enquiry — ANASA Luxury Doors',
+          from_name: 'ANASA Luxury Doors — Website',
+          name: val('enq-name'),
+          email: val('enq-email'),
+          phone: val('enq-phone') || '—',
+          project: val('enq-project'),
+          botcheck: bot ? bot.checked : false
+        };
 
-        form.style.display='none';
-        if(success){
-          success.classList.add('show');
-          const h = success.querySelector('[tabindex="-1"]');
-          if(h) h.focus();
+        if(errBox) errBox.classList.remove('show');
+        const btnHtml = submitBtn ? submitBtn.innerHTML : '';
+        if(submitBtn){ submitBtn.disabled = true; submitBtn.setAttribute('aria-busy','true'); submitBtn.innerHTML = 'Sending…'; }
+
+        try{
+          const res = await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if(!data.success) throw new Error(data.message || 'Submission failed');
+          form.style.display='none';
+          if(success){
+            success.classList.add('show');
+            const h = success.querySelector('[tabindex="-1"]');
+            if(h) h.focus();
+          }
+        }catch(err){
+          if(submitBtn){ submitBtn.disabled = false; submitBtn.removeAttribute('aria-busy'); submitBtn.innerHTML = btnHtml; }
+          if(errBox){
+            errBox.textContent = 'Sorry — your enquiry could not be sent just now. Please try again, or email us directly at info@anasaluxurydoors.co.za.';
+            errBox.classList.add('show');
+            errBox.focus();
+          }
         }
       });
       form.querySelectorAll('input,textarea').forEach(inp=>{
